@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load filters %}
+{#{% load filters %}#}
 {% block content %}
     {% include 'nav_bar.html' with active='sales' %}
 
@@ -148,7 +148,7 @@
                                         <div>{{ rendered_service.price }} руб</div>
                                     </div>
                                     <div class="enter-sale__col-in enter-sale__duration">
-                                        <div>{{ rendered_service.lead_time|extract_duration }}</div>
+{#                                        <div>{{ rendered_service.lead_time|extract_duration }}</div>#}
                                     </div>
                                 </div>
                             </div>
