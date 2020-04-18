@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block content %}
+    {% include 'nav_bar.html' with active='statistics' %}
+    <div class="container">
+        <div class="range-row">
+            <a href="{{ request.path }}?date_begin={{ dates.day.begin }}&date_end={{ dates.day.end }}&type=day"
+               class="range-row__el {% if request.GET.type == 'day' or not request.GET.type %}range-row__el_active{% endif %}">За
+                день</a>
+
+            <a href="{{ request.path }}?date_begin={{ dates.month.begin }}&date_end={{ dates.month.end }}&type=month"
+               class="range-row__el {% if request.GET.type == 'month' %}range-row__el_active{% endif %}">За месяц</a>
+
+            <a href="{{ request.path }}?date_begin={{ dates.year.begin }}&date_end={{ dates.year.end }}&type=year"
+               class="range-row__el {% if request.GET.type == 'year' %}range-row__el_active{% endif %}">За год</a>
+
+            <form>
+
+                    <div class="range-row__el"><button type="submit">За период с </button><input {% if request.GET.date_begin %}value="{{ request.GET.date_begin }}"{% endif %} type="date"  name="date_begin" placeholder="дд.мм.гггг"> по <input {% if request.GET.date_end %}value="{{ request.GET.date_end }}"{% endif %}
+                            type="date" name="date_end" placeholder="дд.мм.гггг"></div>
+
+            </form>
+        </div>
+        <div class="report-row">
+            <div class="report-row__line">
+                <div class="report-row__col-left">Заработано:</div>
+                <div class="report-row__col-right">{{ earnings }} руб <span></span></div>
+            </div>
+            <div class="report-row__line">
+                <div class="report-row__col-left">Кол-во клиентов:</div>
+                <div class="report-row__col-right">{{ clients.amount }}
+                    <span>Из них {{ clients.new }} ({{ clients.percent }}%) новых</span></div>
+            </div>
+            <div class="report-row__line">
+                <div class="report-row__col-left">Средний зарабаток в час:</div>
+                <div class="report-row__col-right">{{ avg_earnings_in_hour }} руб
+                    <span></span></div>
+            </div>
+        </div>
+        <canvas id="statistics_chart" width="1000" height="300"></canvas>
+    </div>
+    {% include 'footer.html' %}
+    <script src="/static/js/Chart.bundle.min.js"></script>
+
+    <script>
+        const ctx = document.getElementById('statistics_chart').getContext('2d');
+
+        const chart_handler = new Chart(ctx, {
+            type: 'line',
+            data: {
+                datasets: [{
+                    backgroundColor: '#27AE60',
+                    borderColor: '#27AE60',
+                    fill: false,
+                    data: {{ graph_points|safe }}
+                }]
+            },
+            options: {
+                legend: {
+                    display: false
+                },
+                responsive: true,
+                scales: {
+
+                    xAxes: [{
+                        type: 'time',
+                        time: {
+                            displayFormats: {
+                                day: 'DD.MM',
+                                hour: 'DD HH:mm',
+                                minute: 'HH:mm',
+                                second: 'HH:mm:ss',
+                            },
+                        },
+
+                        display: true,
+
+                        ticks: {
+                            fontColor: '#000000',
+                        }
+                    }],
+                    yAxes: [{
+                        display: true,
+                        ticks: {
+                            fontColor: '#000000',
+                        }
+                    }]
+                }
+            }
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+{% load filters %}
+{% block content %}
+    {% include 'nav_bar.html' with active='sales' %}
+
+    <div class="container">
+
+
+        <div class="enter-container">
+            <form method="post">{% csrf_token %}
+                <div class="enter-sale enter-sale_opt">
+                    <div class="enter-sale__row">
+                        <div class="enter-sale__row-wrapper">
+
+                            <div class="enter-sale__row">
+                                <div class="enter-sale__new-row" title="Будет создана новая услуга">Н!</div>
+                                <div class="enter-sale__col enter-sale__service">
+                                    <div class="enter-sale__col-in ">
+                                        <div class="dropdown">
+                                            <input name="service" class="input input__last-focus _service-input"
+                                                   placeholder="Услуга">
+                                            <div class="dropdown__list">
+                                                <button class="dropdown__el"><div class="_main">Подсказка 1</div></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="enter-sale__col enter-sale__flex">
+                                    <div class="enter-sale__col-in enter-sale__count">
+                                        <svg class="enter-sale__mul enter-sale__mul_disable" width="9" height="9"
+                                             viewBox="0 0 9 9" fill="none">
+                                            <path d="M1 1L8 8M1 8L8 1" stroke="black"></path>
+                                        </svg>
+                                        <input name="amount" type="number" class="input input__last-focus _count-input"
+                                               placeholder="Кол-во">
+                                    </div>
+                                    <div class="enter-sale__col-in enter-sale__price">
+                                        <input name="price" class="input input__last-focus _price-input"
+                                               placeholder="Цена">
+                                    </div>
+                                    <div class="enter-sale__col-in enter-sale__duration">
+                                        <input name="duration" class="input  input__last-focus _duration-input"
+                                               placeholder="Дл. раб.">
+                                    </div>
+                                </div>
+                                <div class="row__close-button">
+                                    <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
+                                        <path d="M2 2L15 15M2 15L15 2" stroke-width="3"></path>
+                                    </svg>
+                                </div>
+
+                            </div>
+
+
+                        </div>
+
+
+                    </div>
+                    <div class="enter-sale__row enter-sale__bottom-row">
+                        <div class="enter-sale__col enter-sale__service _client">
+                            <div class="dropdown">
+                                <input name="client" class="input input__last-focus" placeholder="Клиент">
+                                <div class="dropdown__list">
+                                    <button class="dropdown__el">
+                                        <div class="client__title _main _name">[none]</div>
+                                        <div class="client__sale_detail">Последний заказ: <span class="_date_last_purchase">[none]</span></div>
+                                        <div class="client__sale_service _services_list_last_purchase">[none]</div>
+                                        <div class="client__sale_detail">На общую сумму: <span class="_total_last_purchase">[none]</span></div>
+                                    </button>
+
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="enter-sale__col">
+                            <button type="submit" class="enter-sale__button">Сохранить</button>
+                        </div>
+
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="sort-control">
+            <div>Сортировать по:</div>
+            <a href="{{ request.path }}?order_by=date{% if not request.GET.order_reverse and request.GET.order_by %}&order_reverse=true{% endif %}"
+               class="sort-control__option {% if request.GET.order_by == 'date' or not request.GET.order_by %}sort-control__option_active{% endif %}">Дате
+                <svg class="sort-arrow {% if request.GET.order_reverse == 'true' or not request.GET.order_by %}sort-arrow_flip{% endif %}"
+                     width="11" height="7" viewBox="0 0 11 7" fill="none"
+                     xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 6L5.5 1L10 6"></path>
+                </svg>
+            </a>
+            <a href="{{ request.path }}?order_by=sum{% if not request.GET.order_reverse %}&order_reverse=true{% endif %}"
+               class="sort-control__option {% if request.GET.order_by == 'sum' %}sort-control__option_active{% endif %}">Доходу
+                <svg class="sort-arrow {% if request.GET.order_reverse == 'true' %}sort-arrow_flip{% endif %}"
+                     width="11" height="7" viewBox="0 0 11 7" fill="none"
+                     xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 6L5.5 1L10 6"></path>
+                </svg>
+            </a>
+        </div>
+
+        {% for sale in sales %}
+            <div class="enter-sale enter-sale_opt">
+                <div class="enter-sale__row">
+                    <div class="enter-sale__row-wrapper">
+
+                        <div class="enter-sale__row enter-sale__titles">
+                            <div class="enter-sale__col enter-sale__service">
+                                <div class="enter-sale__col-in ">
+                                    <div>
+                                        Услуги
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="enter-sale__col enter-sale__flex">
+                                <div class="enter-sale__col-in enter-sale__count enter-sale__price_no-margin">
+                                    <div>Кол-во</div>
+                                </div>
+                                <div class="enter-sale__col-in enter-sale__price ">
+                                    <div>Цена</div>
+                                </div>
+                                <div class="enter-sale__col-in enter-sale__duration">
+                                    <div>Дл. Раб</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% for rendered_service in sale.rendered_services.all %}
+                            <div class="enter-sale__row">
+                                <div class="enter-sale__col enter-sale__service">
+                                    <div class="enter-sale__col-in ">
+                                        <div>
+                                            {{ rendered_service.service|capfirst }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="enter-sale__col enter-sale__flex">
+                                    <div class="enter-sale__col-in enter-sale__count">
+                                        <svg style="margin-bottom: 3px" width="9" height="9" viewBox="0 0 9 9"
+                                             fill="none">
+                                            <path d="M1 1L8 8M1 8L8 1" stroke="black"></path>
+                                        </svg>
+                                        {{ rendered_service.amount }}
+                                    </div>
+                                    <div class="enter-sale__col-in enter-sale__price">
+                                        <div>{{ rendered_service.price }} руб</div>
+                                    </div>
+                                    <div class="enter-sale__col-in enter-sale__duration">
+                                        <div>{{ rendered_service.lead_time|extract_duration }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                </div>
+                <div class="enter-sale__row enter-sale__bottom-row">
+                    <div class="enter-sale__list">
+                        <div class="enter-sale__row enter-sale__titles">
+                            <div class="enter-sale__col enter-sale__col-in enter-sale__service">
+                                <div>Клиент</div>
+
+                            </div>
+                            <div class="enter-sale__col data_width">
+                                Дата
+                            </div>
+                        </div>
+                        <div class="enter-sale__row ">
+                            <div class="enter-sale__col enter-sale__col-in enter-sale__service">
+                                <div>{{ sale.client|capfirst }}</div>
+
+                            </div>
+                            <div class="enter-sale__col data_width">
+                                {{ sale.date|date:"j E Y в H:i" }}
+                            </div>
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+            </div>
+        {% endfor %}
+
+
+    </div>
+
+    {% include 'footer.html' %}
+
+    <div class="tip tip_hidden">
+        <div class="tip__close-button">
+            <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
+                <path d="M2 2L15 15M2 15L15 2" stroke="white" stroke-opacity="0.4" stroke-width="3"></path>
+            </svg>
+        </div>
+        <h2 class="tip__title">Пример заголовка</h2>
+        <div class="tip__prices">Средняя цена: 1200 руб</div>
+        <div class="tip__prices">Минимальная цена цена: 1000 руб</div>
+        <canvas id="tip_chart" width="400" height="130"></canvas>
+    </div>
+    <script src="/static/js/Chart.bundle.min.js"></script>
+    <script src="/static/js/main.js"></script>
+{% endblock %}

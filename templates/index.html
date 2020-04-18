@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block content %}
+    <nav>
+        <p1>{{ company.name }}</p1>
+        <a href="#">{{ user.full_name }}</a>
+    </nav>
+    <h1>Добавить услугу</h1>
+    <style>
+
+
+    </style>
+    <form method="post" style="margin-bottom: 30px">
+        {% csrf_token %}
+
+        <div class="dropdown">
+            <div id="myDropdown" class="dropdown-content">
+                <input class="input-line" type="text" placeholder="Услуга" onfocusout="document.getElementById('drop').style.display='none'" onfocusin="document.getElementById('drop').style.display=''; filterFunction()" id="myInput" onkeyup="filterFunction()">
+                <div id="drop" style="display: none">
+                    <a href="#about"></a>
+                    <a href="#base"></a>
+                    <a href="#blog"></a>
+                    <a href="#contact"></a>
+                    <a href="#custom"></a>
+                    <a href="#support"></a>
+                    <a href="#tools"></a>
+                </div>
+            </div>
+        </div>
+
+        {#        <input name="name" placeholder="Услуга" style="width: 50%">#}
+        {##}
+        <input id="price" class="input-line" name="price" placeholder="Цена" style="width: 120px">
+        <input class="input-line" name="client" placeholder="Клиент">
+        <input class="input-line" name="provider" placeholder="Рабочий">
+        <input class="input-line" name="lead_time" placeholder="Затраченно" style="width: 120px">
+    </form>
+
+    <div style="border-top: 1px solid black; margin-top: 10px">
+        <h1>Оказанные услуги:</h1>
+        <table>
+            {% for service in services %}
+                <tr>
+                    <td>{{ service.name }}</td>
+                    <td>{{ service.price }}</td>
+                    <td>{{ service.client }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <script>
+        async function download(q) {
+            const url = `/api/service_options/?q=${q}`;
+            let r = await fetch(url);
+            if (r.ok) {
+                return await r.json()
+            } else {
+                console.log(`url ${url} return code ${r.status}`);
+                return {}
+            }
+        }
+
+
+        async function filterFunction() {
+            let a = document.getElementById("myDropdown").getElementsByTagName("a");
+            for (let i = 0; i < a.length; i++) {
+                a[i].style.display = "none"
+            }
+            const input = document.getElementById("myInput");
+            let q = input.value.toLowerCase();
+            if (!q) {
+                return
+            }
+
+            let data = (await download(q))['data'];
+            for (let i = 0; i < a.length; i++) {
+                if (data[i] === undefined) {
+                    break
+                } else {
+                    a[i].innerText = data[i];
+                    a[i].style.display = "";
+                }
+            }
+        }
+
+
+
+    </script>
+{% endblock %}

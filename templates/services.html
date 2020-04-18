@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load filters %}
+{% block content %}
+    {% include 'nav_bar.html' with active='services' %}
+    <div class="container">
+        <div class="service-info">
+            <div>Самая популярная: {{ most_popular_service.name }}
+                <span>({{ most_popular_service.amount }} продано)</span></div>
+            <div>Самая доходная: {{ most_popular_service.name }}
+                <span>({{ most_profitable_service.profitable|floatformat:"2" }} руб/час)</span>
+            </div>
+        </div>
+        <div class="service-row service-row__bold">
+            <div class="service-col">Услуга</div>
+            <div class="service-col">Средняя цена</div>
+            <div class="service-col">Кол-во</div>
+            <div class="service-col">Среднее вр. раб</div>
+
+        </div>
+        {% for service in services %}
+            <div class="service-row">
+                <div class="service-col">{{ service.name }}</div>
+                <div class="service-col">{{ service.avg_price|floatformat:"2" }} руб</div>
+                <div class="service-col">{{ service.amount }}</div>
+                <div class="service-col">{{ service.avg_lead_time|extract_duration }}</div>
+            </div>
+        {% endfor %}
+
+    </div>
+
+    {% include 'footer.html' %}
+{% endblock %}

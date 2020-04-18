@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+    {% include 'nav_bar.html' with active='clients' %}
+    <div class="container">
+        <div class="service-row service-row__bold">
+            <div class="service-col">Имя</div>
+            <div class="service-col">Сумма покупок</div>
+            <div class="service-col">Кол-во покупок</div>
+            <div class="service-col">Последняя активность</div>
+
+        </div>
+        {% for client in clients %}
+            <div class="service-row">
+                <div class="service-col">{{ client }}</div>
+                <div class="service-col">{{ client.sum }} руб</div>
+                <div class="service-col">{{ client.amount }}</div>
+                <div class="service-col">{{ client.last_purchase }}</div>
+            </div>
+        {% endfor %}
+
+    </div>
+
+    {% include 'footer.html' %}
+{% endblock %}
