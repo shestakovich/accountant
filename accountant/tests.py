@@ -59,7 +59,7 @@ class SaleFormTests(TestCase):
             'service_1': 'test_service2',
             'amount_1': '2',
             'price_1': '2000000.00',
-            'lead_time_1': '3:00:00',
+            'duration_1': '3:00:00',
         })
 
         self.assertTrue(form.is_valid())
@@ -79,7 +79,7 @@ class SaleFormTests(TestCase):
             'service_1': 'test_service2',
             'amount_1': '2',
             'price_1': '2000000.00',
-            'lead_time_1': '3:00:00',
+            'duration_1': '3:00:00',
         })
         form.is_valid()
         sale = form.save()
@@ -89,7 +89,7 @@ class SaleFormTests(TestCase):
             'service_1': 'test_service_2',
             'amount_1': '2',
             'price_1': '2000000.00',
-            'lead_time_1': '3:00:00',
+            'duration_1': '3:00:00',
         }, instance=sale)
         self.assertTrue(ins_form.is_valid())
         sale = ins_form.save()

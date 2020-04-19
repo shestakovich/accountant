@@ -11,46 +11,48 @@ def format_timedelta(timedelta):
 class SaleForm(forms.ModelForm):
     client_name = forms.CharField(required=False)
 
+    service_field = "service_{}"
+    amount_field = "amount_{}"
+    price_field = "price_{}"
+    lead_time_field = "duration_{}"
+
     def __init__(self, request, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.request = request
 
         sold_services = SoldService.objects.filter(sale=self.instance)
         for i in (range(len(sold_services)) if not self.is_bound else range(50)):
-            self.fields[f"service_{i}"] = forms.CharField(required=False)
-            self.fields[f"amount_{i}"] = forms.IntegerField(min_value=1, required=False)
-            self.fields[f"price_{i}"] = forms.DecimalField(required=False)
-            self.fields[f"duration_{i}"] = forms.DurationField(required=False)
+            self.fields[self.service_field.format(i)] = forms.CharField(required=False)
+            self.fields[self.amount_field.format(i)] = forms.IntegerField(min_value=1, required=False)
+            self.fields[self.price_field.format(i)] = forms.DecimalField(required=False)
+            self.fields[self.lead_time_field.format(i)] = forms.DurationField(required=False)
 
         for i, sold_service in enumerate(sold_services):
-            self.initial[f"service_{i}"] = sold_service.service.name
-            self.initial[f"amount_{i}"] = sold_service.amount
-            self.initial[f"price_{i}"] = sold_service.price
-            self.initial[f"duration_{i}"] = format_timedelta(sold_service.lead_time) if sold_service.lead_time else ''
+            self.initial[self.service_field.format(i)] = sold_service.service.name
+            self.initial[self.amount_field.format(i)] = sold_service.amount
+            self.initial[self.price_field.format(i)] = sold_service.price
+            self.initial[self.lead_time_field.format(i)] = format_timedelta(sold_service.lead_time) \
+                if sold_service.lead_time else ''
 
     def clean(self):
         i = 0
         sold_services = []
 
-        while self.cleaned_data.get(f"service_{i}"):
-            service_field = f"service_{i}"
-            amount_field = f"amount_{i}"
-            price_field = f"price_{i}"
-            lead_time_field = f"duration_{i}"
+        while self.cleaned_data.get(self.service_field.format(i)):
 
             sold_services.append({
-                'service': self.cleaned_data.get(service_field),
-                'amount': self.cleaned_data.get(amount_field) or 1,
-                'price': self.cleaned_data.get(price_field),
-                'lead_time': self.cleaned_data.get(lead_time_field) or None,
+                'service': self.cleaned_data.get(self.service_field.format(i)),
+                'amount': self.cleaned_data.get(self.amount_field.format(i)) or 1,
+                'price': self.cleaned_data.get(self.price_field.format(i)),
+                'lead_time': self.cleaned_data.get(self.lead_time_field.format(i)) or None,
             })
 
-            if not self.cleaned_data.get(price_field):
-                self.add_error(price_field, 'required')
+            if not self.cleaned_data.get(self.price_field.format(i)):
+                self.add_error(self.price_field.format(i), 'required')
             i += 1
 
         if not sold_services:
-            self.add_error('service_0', 'required')
+            self.add_error(self.service_field.format(0), 'required')
 
         self.cleaned_data['sold_services'] = sold_services
 
