@@ -13,9 +13,16 @@ User = get_user_model()
 class SaleFormTests(TestCase):
     def setUp(self):
         company = Company.objects.create(name='test_company')
-        self.user = User.objects.create_user(username='test_user', company=company)
+        self.user = User.objects.create_user(username='test_user',
+                                             company=company,
+                                             )
         self.request = lambda x: x
         self.request.user = self.user
+
+    def test_blank_form(self):
+        form = SaleForm(self.request, {})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form['service_0'].errors[0], 'required')
 
     def test_create_sale_service(self):
         form = SaleForm(self.request, {
@@ -94,6 +101,12 @@ class SaleFormTests(TestCase):
 
 
 class SalePageViewTests(TestCase):
+    def setUp(self):
+        self.client.force_login(User.objects.create_user(username='test',
+                                                         password='testtest',
+                                                         company=Company.objects.create(name='testCompany'),
+                                                         ))
+
     def test_get_sales_page(self):
         response = self.client.get(reverse('sales'))
         self.assertEqual(response.status_code, 200)
@@ -105,3 +118,9 @@ class SalePageViewTests(TestCase):
         })
 
         self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse('sales'))
+
+        self.assertEqual(Sale.objects.all().count(), 1)
+        self.assertEqual(Service.objects.all().count(), 1)
+        self.assertEqual(SoldService.objects.all().count(), 1)
+        self.assertEqual(Client.objects.all().count(), 1)

@@ -16,7 +16,7 @@ class SaleForm(forms.ModelForm):
         self.request = request
 
         sold_services = SoldService.objects.filter(sale=self.instance)
-        for i in range(50):
+        for i in (range(len(sold_services)) if not self.is_bound else range(50)):
             self.fields[f"service_{i}"] = forms.CharField(required=False)
             self.fields[f"amount_{i}"] = forms.IntegerField(min_value=1, required=False)
             self.fields[f"price_{i}"] = forms.DecimalField(required=False)

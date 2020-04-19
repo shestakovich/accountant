@@ -25,3 +25,7 @@ class SalesPage(LoginRequiredMixin, FormView):
                 'services__service')
         })
         return super().get_context_data(**kwargs)
+
+    def form_valid(self, form):
+        form.save()
+        return super().form_valid(form)
