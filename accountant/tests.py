@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.urls import reverse
 
 from accountant.forms import SaleForm
 from accountant.models import Company, SoldService, Service, Sale, Client
@@ -91,3 +92,16 @@ class SaleFormTests(TestCase):
 
         self.assertEqual(Client.objects.all().count(), 1)
 
+
+class SalePageViewTests(TestCase):
+    def test_get_sales_page(self):
+        response = self.client.get(reverse('sales'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_post_sale_data(self):
+        response = self.client.post(reverse('sales'), {
+            'service_0': 'test_service',
+            'price_0': '123.00',
+        })
+
+        self.assertEqual(response.status_code, 302)

@@ -127,12 +127,12 @@
                             </div>
                         </div>
 
-                        {% for rendered_service in sale.rendered_services.all %}
+                        {% for sold_service in sale.services.all %}
                             <div class="enter-sale__row">
                                 <div class="enter-sale__col enter-sale__service">
                                     <div class="enter-sale__col-in ">
                                         <div>
-                                            {{ rendered_service.service|capfirst }}
+                                            {{ sold_service.service|capfirst }}
                                         </div>
                                     </div>
                                 </div>
@@ -142,10 +142,10 @@
                                              fill="none">
                                             <path d="M1 1L8 8M1 8L8 1" stroke="black"></path>
                                         </svg>
-                                        {{ rendered_service.amount }}
+                                        {{ sold_service.amount }}
                                     </div>
                                     <div class="enter-sale__col-in enter-sale__price">
-                                        <div>{{ rendered_service.price }} руб</div>
+                                        <div>{{ sold_service.price }} руб</div>
                                     </div>
                                     <div class="enter-sale__col-in enter-sale__duration">
 {#                                        <div>{{ rendered_service.lead_time|extract_duration }}</div>#}
