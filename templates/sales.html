@@ -7,7 +7,8 @@
 
 
         <div class="enter-container">
-            <form method="post">{% csrf_token %}
+            {{ form.errors }}
+            <form class="_sale_form" method="post">{% csrf_token %}
                 <div class="enter-sale enter-sale_opt">
                     <div class="enter-sale__row">
                         <div class="enter-sale__row-wrapper">
@@ -17,7 +18,7 @@
                                 <div class="enter-sale__col enter-sale__service">
                                     <div class="enter-sale__col-in ">
                                         <div class="dropdown">
-                                            <input name="service" class="input input__last-focus _service-input"
+                                            <input name="service_0" class="input input__last-focus _service-input"
                                                    placeholder="Услуга">
                                             <div class="dropdown__list">
                                                 <button class="dropdown__el"><div class="_main">Подсказка 1</div></button>
@@ -31,15 +32,15 @@
                                              viewBox="0 0 9 9" fill="none">
                                             <path d="M1 1L8 8M1 8L8 1" stroke="black"></path>
                                         </svg>
-                                        <input name="amount" type="number" class="input input__last-focus _count-input"
+                                        <input name="amount_0" type="number" class="input input__last-focus _count-input"
                                                placeholder="Кол-во">
                                     </div>
                                     <div class="enter-sale__col-in enter-sale__price">
-                                        <input name="price" class="input input__last-focus _price-input"
+                                        <input name="price_0" class="input input__last-focus _price-input"
                                                placeholder="Цена">
                                     </div>
                                     <div class="enter-sale__col-in enter-sale__duration">
-                                        <input name="duration" class="input  input__last-focus _duration-input"
+                                        <input name="duration_0" class="input  input__last-focus _duration-input"
                                                placeholder="Дл. раб.">
                                     </div>
                                 </div>

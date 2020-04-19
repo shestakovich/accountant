@@ -4,10 +4,23 @@ let cache = {};
 const input_row_sample = document.querySelector('.enter-sale__row-wrapper').firstElementChild.cloneNode(true);
 setter_events_listener(document.querySelector('.enter-sale__row-wrapper .enter-sale__row'));
 dropdown_setter(document.querySelector('._client'), async (q) => {
-    let response = await fetch(`/api/clients_options/?q=${q}`);
-    let data = await response.json();
-    return data['clients']
+    // let response = await fetch(`/api/clients_options/?q=${q}`);
+    // let data = await response.json();
+    // return data['clients']
+    return []
 });
+document.querySelector("._sale_form").addEventListener('submit', event => {
+    document.querySelectorAll('._sale_form .enter-sale__row-wrapper .enter-sale__row').forEach((el, key)=>{
+        el.querySelectorAll('input').forEach(input_el=>{
+            input_el.name = [input_el.name.split('_')[0], key].join('_')
+            if (input_el.name.startsWith('price')){
+                input_el.value = input_el.value ? parseFloat(input_el.value).toString() : ''
+            }
+        })
+
+    })
+    // event.preventDefault()
+})
 
 
 function dropdown_setter(el, download_list, button_click_callback = null) {
@@ -71,9 +84,10 @@ function dropdown_setter(el, download_list, button_click_callback = null) {
 
 
 async function download_services_list(q) {
-    let response = await fetch(`/api/service_options/?q=${q}`);
-    let data = await response.json();
-    return data['services']
+    // let response = await fetch(`/api/service_options/?q=${q}`);
+    // let data = await response.json();
+    // return data['services']
+    return []
 }
 
 
@@ -215,17 +229,18 @@ function setter_events_listener(row) {
 
 
 async function download_data_tip(service) {
-    let data = cache[service];
-    if (!data) {
-        // download
-        let response = await fetch(`/api/service_tip/?q=${service}`);
-        data = await response.json();
-        cache[service] = data;
-    }
-    if (data['error']) {
-        return null
-    }
-    return data
+    // let data = cache[service];
+    // if (!data) {
+    //     // download
+    //     let response = await fetch(`/api/service_tip/?q=${service}`);
+    //     data = await response.json();
+    //     cache[service] = data;
+    // }
+    // if (data['error']) {
+    //     return null
+    // }
+    // return data
+    return null
 }
 
 async function downloader(url, cacheable = true) {
