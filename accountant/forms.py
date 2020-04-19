@@ -22,11 +22,11 @@ class SaleForm(forms.ModelForm):
             self.fields[f"price_{i}"] = forms.DecimalField(required=False)
             self.fields[f"lead_time_{i}"] = forms.DurationField(required=False)
 
-        for i, service in enumerate(sold_services):
-            self.initial[f"service_{i}"] = service.name
-            self.initial[f"amount_{i}"] = service.amount
-            self.initial[f"price_{i}"] = service.price
-            self.initial[f"lead_time_{i}"] = format_timedelta(service.lead_time) if service.lead_time else ''
+        for i, sold_service in enumerate(sold_services):
+            self.initial[f"service_{i}"] = sold_service.service.name
+            self.initial[f"amount_{i}"] = sold_service.amount
+            self.initial[f"price_{i}"] = sold_service.price
+            self.initial[f"lead_time_{i}"] = format_timedelta(sold_service.lead_time) if sold_service.lead_time else ''
 
     def clean(self):
         i = 0
@@ -62,12 +62,14 @@ class SaleForm(forms.ModelForm):
         sale.company = self.request.user.company
         sale.service_provider = self.request.user
         client_name = self.cleaned_data.get('client_name')
-        if client_name:
-            sale.client = Client.objects.get_or_create(company=sale.company, name=client_name)[0]
-        else:
-            sale.client = Client.objects.create(company=sale.company)
+        if not sale.pk or sale.client.name != client_name:
+            if client_name:
+                sale.client = Client.objects.get_or_create(company=sale.company, name=client_name)[0]
+            else:
+                sale.client = Client.objects.create(company=sale.company)
+
         sale.save()
-        
+
         sale.services.all().delete()
 
         for sold_service in self.cleaned_data['sold_services']:

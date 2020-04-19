@@ -63,3 +63,31 @@ class SaleFormTests(TestCase):
         self.assertEqual(sale.services.get(service__name='test_service2').price, 2000000.00)
         self.assertEqual(sale.services.get(service__name='test_service2').amount, 2)
         self.assertEqual(sale.services.get(service__name='test_service2').lead_time, timedelta(hours=3))
+
+    def test_change_sale(self):
+        form = SaleForm(self.request, {
+            'service_0': 'test_service',
+            'price_0': '123.00',
+            'service_1': 'test_service2',
+            'amount_1': '2',
+            'price_1': '2000000.00',
+            'lead_time_1': '3:00:00',
+        })
+        form.is_valid()
+        sale = form.save()
+        ins_form = SaleForm(self.request, {
+            'service_0': 'test_service',
+            'price_0': '123.00',
+            'service_1': 'test_service_2',
+            'amount_1': '2',
+            'price_1': '2000000.00',
+            'lead_time_1': '3:00:00',
+        }, instance=sale)
+        self.assertTrue(ins_form.is_valid())
+        sale = ins_form.save()
+        self.assertEqual(sale.services.count(), 2)
+        self.assertTrue(sale.services.filter(service__name='test_service_2').exists())
+        self.assertFalse(sale.services.filter(service__name='test_service2').exists())
+
+        self.assertEqual(Client.objects.all().count(), 1)
+
