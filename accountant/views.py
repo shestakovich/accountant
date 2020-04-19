@@ -22,7 +22,7 @@ class SalesPage(LoginRequiredMixin, FormView):
     def get_context_data(self, **kwargs):
         kwargs.update({
             'sales': Sale.objects.filter(company=self.request.user.company).select_related('client').prefetch_related(
-                'services__service')
+                'services__service').order_by('-date')
         })
         return super().get_context_data(**kwargs)
 

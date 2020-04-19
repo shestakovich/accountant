@@ -16,6 +16,9 @@ document.querySelector("._sale_form").addEventListener('submit', event => {
             if (input_el.name.startsWith('price')){
                 input_el.value = input_el.value ? parseFloat(input_el.value).toString() : ''
             }
+            if (input_el.name.startsWith('duration')){
+                input_el.value = input_el.value ? input_el.value + ':00' : ''
+            }
         })
 
     })

@@ -20,13 +20,13 @@ class SaleForm(forms.ModelForm):
             self.fields[f"service_{i}"] = forms.CharField(required=False)
             self.fields[f"amount_{i}"] = forms.IntegerField(min_value=1, required=False)
             self.fields[f"price_{i}"] = forms.DecimalField(required=False)
-            self.fields[f"lead_time_{i}"] = forms.DurationField(required=False)
+            self.fields[f"duration_{i}"] = forms.DurationField(required=False)
 
         for i, sold_service in enumerate(sold_services):
             self.initial[f"service_{i}"] = sold_service.service.name
             self.initial[f"amount_{i}"] = sold_service.amount
             self.initial[f"price_{i}"] = sold_service.price
-            self.initial[f"lead_time_{i}"] = format_timedelta(sold_service.lead_time) if sold_service.lead_time else ''
+            self.initial[f"duration_{i}"] = format_timedelta(sold_service.lead_time) if sold_service.lead_time else ''
 
     def clean(self):
         i = 0
@@ -36,7 +36,7 @@ class SaleForm(forms.ModelForm):
             service_field = f"service_{i}"
             amount_field = f"amount_{i}"
             price_field = f"price_{i}"
-            lead_time_field = f"lead_time_{i}"
+            lead_time_field = f"duration_{i}"
 
             sold_services.append({
                 'service': self.cleaned_data.get(service_field),
