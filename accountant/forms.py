@@ -67,6 +67,8 @@ class SaleForm(forms.ModelForm):
         else:
             sale.client = Client.objects.create(company=sale.company)
         sale.save()
+        
+        sale.services.all().delete()
 
         for sold_service in self.cleaned_data['sold_services']:
             sold_service['service'] = Service.objects.get_or_create(company=sale.company,
