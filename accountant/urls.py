@@ -1,6 +1,7 @@
 from django.urls import path
-from .views import SalesPage
+from .views import SalesPage, ServicesPage
 
 urlpatterns = [
-    path('', SalesPage.as_view(), name='sales'),
+    path('sales/', SalesPage.as_view(), name='sales'),
+    path('services/', ServicesPage.as_view(), name='services'),
 ]
