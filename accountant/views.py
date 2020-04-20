@@ -1,14 +1,16 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Sum, FloatField, Avg, Q, Case, When, ExpressionWrapper, F, Value, Count, Max
 from django.db.models.functions import Cast, Extract
 from django.shortcuts import render
 from django.urls import reverse
+from django.utils import timezone
+from django.utils.timezone import make_aware, make_naive
 from django.views.generic import TemplateView, FormView, ListView
 
 from accountant.forms import SaleForm
-from accountant.models import Sale, Service, Client
+from accountant.models import Sale, Service, Client, SoldService
 
 
 class SalesPage(LoginRequiredMixin, FormView):
@@ -86,3 +88,78 @@ class ClientsPage(LoginRequiredMixin, ListView):
             .order_by('-last_purchase')
 
         return queryset
+
+
+class StatisticsPage(LoginRequiredMixin, TemplateView):
+    template_name = 'statistics.html'
+
+    def get_context_data(self, **kwargs):
+        date_begin = self.request.GET.get('date_begin')
+        date_end = self.request.GET.get('date_end')
+        if not (date_begin and date_end):
+            # TODO: Найти более адекватный способ нахождения начала дня
+            time_range = [make_aware(datetime.strptime(make_naive(timezone.now()).strftime('%Y-%m-%d'), '%Y-%m-%d')),
+                          make_aware(datetime.strptime(make_naive(timezone.now()).strftime('%Y-%m-%d'),
+                                                       '%Y-%m-%d')) + timedelta(days=1),
+                          ]
+        else:
+            time_range = [make_aware(datetime.strptime(date_begin, '%Y-%m-%d')),
+                          make_aware(datetime.strptime(date_end, '%Y-%m-%d')),
+                          ]
+
+        q_sales_limited_time = Sale.objects.filter(date__range=time_range, company=self.request.user.company)
+
+        earnings = q_sales_limited_time.aggregate(earnings=Sum('services__price'))['earnings']
+
+        amount_clients = q_sales_limited_time.values('client_id').distinct().count()
+
+        amount_new_clients = Client.objects.filter(created_date__range=time_range, company=self.request.user.company) \
+            .annotate(Count('purchases')) \
+            .exclude(purchases__count=0) \
+            .count()
+
+        agr_prices_lead_time = SoldService.objects.filter(sale__date__range=time_range,
+                                                          sale__company=self.request.user.company) \
+            .exclude(lead_time=None) \
+            .aggregate(Sum('price', output_field=FloatField()), Sum('lead_time'))
+
+        avg_earnings_in_hour = agr_prices_lead_time['price__sum'] / (
+                agr_prices_lead_time['lead_time__sum'].seconds / 3600) \
+            if agr_prices_lead_time['lead_time__sum'] \
+            else 0
+
+        sales = q_sales_limited_time.annotate(Sum('services__price')).order_by('-date')
+
+        graph_points = []
+        for sale in sales:
+            graph_points.append({
+                'x': make_naive(sale.date).strftime('%Y-%m-%dT%H:%M:%S'),
+                'y': str(sale.services__price__sum),
+            })
+
+        context = {
+            'avg_earnings_in_hour': round(avg_earnings_in_hour, 2),
+            'earnings': earnings,
+            'clients': {
+                'amount': amount_clients,
+                'new': amount_new_clients,
+                'percent': round(amount_new_clients / amount_clients * 100, 2) if amount_clients else 0,
+            },
+            'graph_points': graph_points,
+            'dates': {
+                'day': {
+                    'begin': make_naive(timezone.now()).strftime('%Y-%m-%d'),
+                    'end': (make_naive(timezone.now()) + timedelta(days=1)).strftime('%Y-%m-%d'),
+                },
+                'month': {
+                    'begin': make_naive(timezone.now()).strftime('%Y-%m-01'),
+                    'end': (make_naive(timezone.now()) + timedelta(days=1)).strftime('%Y-%m-%d'),
+                },
+                'year': {
+                    'begin': make_naive(timezone.now()).strftime('%Y-01-01'),
+                    'end': (make_naive(timezone.now()) + timedelta(days=1)).strftime('%Y-%m-%d'),
+                },
+            }
+        }
+        kwargs.update(context)
+        return super().get_context_data(**kwargs)

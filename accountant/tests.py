@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.test import TestCase, RequestFactory
 from django.urls import reverse
 
 from accountant.forms import SaleForm
@@ -124,3 +124,33 @@ class SalePageViewTests(TestCase):
         self.assertEqual(Service.objects.all().count(), 1)
         self.assertEqual(SoldService.objects.all().count(), 1)
         self.assertEqual(Client.objects.all().count(), 1)
+
+
+class StatisticsPageTests(TestCase):
+    def setUp(self):
+        company = Company.objects.create(name='test_company')
+        self.client.force_login(User.objects.create_user(
+            username='test_user',
+            company=company
+        ))
+        sale = Sale.objects.create(
+            client=Client.objects.create(company=company, name='test_client'),
+            company=company,
+        )
+        SoldService.objects.create(
+            sale=sale,
+            service=Service.objects.create(company=company),
+            price=200.0,
+            lead_time=timedelta(hours=2),
+        )
+
+    def test_load_page(self):
+        response = self.client.get(reverse('statistics'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Заработано')
+
+    def test_context_page(self):
+        response = self.client.get(reverse('statistics'))
+        self.assertEqual(response.context['avg_earnings_in_hour'], 100.0)
+        self.assertEqual(response.context['clients']['amount'], 1)
+        self.assertEqual(response.context['earnings'], 200.0)
