@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     # Local
     'users.apps.UsersConfig',
     'accountant.apps.AccountantConfig',
+    'api.apps.ApiConfig',
 ]
 
 MIDDLEWARE = [

@@ -139,7 +139,7 @@ class StatisticsPageTests(TestCase):
         )
         SoldService.objects.create(
             sale=sale,
-            service=Service.objects.create(company=company),
+            service=Service.objects.create(company=company, name='test_service'),
             price=200.0,
             lead_time=timedelta(hours=2),
         )

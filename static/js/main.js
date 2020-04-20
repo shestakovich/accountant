@@ -4,10 +4,10 @@ let cache = {};
 const input_row_sample = document.querySelector('.enter-sale__row-wrapper').firstElementChild.cloneNode(true);
 setter_events_listener(document.querySelector('.enter-sale__row-wrapper .enter-sale__row'));
 dropdown_setter(document.querySelector('._client'), async (q) => {
-    // let response = await fetch(`/api/clients_options/?q=${q}`);
-    // let data = await response.json();
-    // return data['clients']
-    return []
+    let response = await fetch(`/api/clients_options/?q=${q}`);
+    let data = await response.json();
+    console.log(data['clients'])
+    return data['clients']
 });
 document.querySelector("._sale_form").addEventListener('submit', event => {
     document.querySelectorAll('._sale_form .enter-sale__row-wrapper .enter-sale__row').forEach((el, key)=>{
@@ -87,10 +87,9 @@ function dropdown_setter(el, download_list, button_click_callback = null) {
 
 
 async function download_services_list(q) {
-    // let response = await fetch(`/api/service_options/?q=${q}`);
-    // let data = await response.json();
-    // return data['services']
-    return []
+    let response = await fetch(`/api/service_options/?q=${q}`);
+    let data = await response.json();
+    return data['services']
 }
 
 
@@ -232,18 +231,17 @@ function setter_events_listener(row) {
 
 
 async function download_data_tip(service) {
-    // let data = cache[service];
-    // if (!data) {
-    //     // download
-    //     let response = await fetch(`/api/service_tip/?q=${service}`);
-    //     data = await response.json();
-    //     cache[service] = data;
-    // }
-    // if (data['error']) {
-    //     return null
-    // }
-    // return data
-    return null
+    let data = cache[service];
+    if (!data) {
+        // download
+        let response = await fetch(`/api/service_tip/?q=${service}`);
+        data = await response.json();
+        cache[service] = data;
+    }
+    if (data['error']) {
+        return null
+    }
+    return data
 }
 
 async function downloader(url, cacheable = true) {
