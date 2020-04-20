@@ -1,7 +1,10 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import Sum
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
+from users.models import CustomUser
 
 User = get_user_model()
 
@@ -16,13 +19,16 @@ class Company(models.Model):
 
 
 class Service(models.Model):
-    name = models.CharField(max_length=1024, unique=True)
+    name = models.CharField(max_length=1024)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='services')
 
     created_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        unique_together = ('company', 'name')
 
 
 class Client(models.Model):
@@ -65,3 +71,12 @@ class SoldService(models.Model):
 
     def __str__(self):
         return ' '.join([str(self.service), str(self.price)])
+
+
+@receiver(post_save, sender=CustomUser)
+def add_company(sender, instance, created, **kwargs):
+    print('RECEIVER IN')
+    if created:
+        print('RECEIVER CREATE COMPANY')
+        instance.company = Company.objects.create(name=instance.username)
+        instance.save()

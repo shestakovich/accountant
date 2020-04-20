@@ -61,9 +61,14 @@ class ServicesPage(LoginRequiredMixin, ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         queryset = self.get_queryset()
-        most_popular = queryset.order_by('-amount')[0]
-        most_rub_in_hour = queryset.order_by('-profitable')[0]
-        most_profitable = queryset.order_by('-sum')[0]
+        try:
+            most_popular = queryset.order_by('-amount')[0]
+            most_rub_in_hour = queryset.order_by('-profitable')[0]
+            most_profitable = queryset.order_by('-sum')[0]
+        except IndexError:
+            most_popular = None
+            most_rub_in_hour = None
+            most_profitable = None
 
         context = {
             'most_popular_service': most_popular,
