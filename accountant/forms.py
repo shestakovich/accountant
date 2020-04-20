@@ -9,7 +9,7 @@ def format_timedelta(timedelta):
 
 
 class SaleForm(forms.ModelForm):
-    client_name = forms.CharField(required=False)
+    client = forms.CharField(required=False)
 
     service_field = "service_{}"
     amount_field = "amount_{}"
@@ -63,7 +63,7 @@ class SaleForm(forms.ModelForm):
         sale = super().save(commit=False)
         sale.company = self.request.user.company
         sale.service_provider = self.request.user
-        client_name = self.cleaned_data.get('client_name')
+        client_name = self.cleaned_data.get('client')
         if not sale.pk or sale.client.name != client_name:
             if client_name:
                 sale.client = Client.objects.get_or_create(company=sale.company, name=client_name)[0]

@@ -99,6 +99,17 @@ class SaleFormTests(TestCase):
 
         self.assertEqual(Client.objects.all().count(), 1)
 
+    def test_create_sale_with_client(self):
+        form = SaleForm(self.request, {
+            'service_0': 'test_service',
+            'price_0': '123.00',
+            'client': 'test_client',
+        })
+        self.assertTrue(form.is_valid())
+        form.save()
+        self.assertEqual(Client.objects.last().name, 'test_client')
+        self.assertEqual(Client.objects.last().purchases.all().count(), 1)
+
 
 class SalePageViewTests(TestCase):
     def setUp(self):
