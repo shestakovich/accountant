@@ -26,9 +26,25 @@ class SalesPage(LoginRequiredMixin, FormView):
         return self.request.path
 
     def get_context_data(self, **kwargs):
+        order_by = '-date'
+        data = self.request.GET
+        r_order_by = data.get('order_by')
+        if data.get('order_by') == 'date' and not data.get('order_reverse'):
+            order_by = 'date'
+        elif data.get('order_by') == 'sum' and data.get('order_reverse') == 'true':
+            order_by = '-sum_price'
+        elif data.get('order_by') == 'sum' and not data.get('order_reverse'):
+            order_by = 'sum_price'
+
+        sales = Sale.objects\
+            .filter(company=self.request.user.company)\
+            .select_related('client')\
+            .prefetch_related('services__service')\
+            .annotate(sum_price=Sum('services__price'))\
+            .order_by(order_by)
+
         kwargs.update({
-            'sales': Sale.objects.filter(company=self.request.user.company).select_related('client').prefetch_related(
-                'services__service').order_by('-date')
+            'sales': sales,
         })
         return super().get_context_data(**kwargs)
 
