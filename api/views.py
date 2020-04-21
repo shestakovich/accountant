@@ -1,6 +1,7 @@
 from django.db.models import Avg, Min, Prefetch, Sum, FloatField
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.utils.formats import date_format
 from django.utils.timezone import make_naive
 
 from accountant.models import Service, Sale, SoldService, Client
@@ -92,8 +93,8 @@ def client_options_by_service(request):
     for client in clients:
         purchase = client.purchases.filter(services__service__name__contains=q).prefetch_related('services__service').order_by('-date')[0]
         response_data.append({
-            'name': client.name,
-            'purchase_date': purchase.date,
+            'name': str(client),
+            'purchase_date': date_format(purchase.date, 'j E Y в H:i'),
             'purchase_services': list(purchase.services.all().values_list('service__name', flat=True)),
             'purchase_total': purchase.services.all().aggregate(total=Sum('price', output_field=FloatField()))['total'],
         })

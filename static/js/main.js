@@ -6,7 +6,6 @@ setter_events_listener(document.querySelector('.enter-sale__row-wrapper .enter-s
 dropdown_setter(document.querySelector('._client'), async (q) => {
     let response = await fetch(`/api/clients_options/?q=${q}`);
     let data = await response.json();
-    console.log(data['clients'])
     return data['clients']
 });
 document.querySelector("._sale_form").addEventListener('submit', event => {
@@ -25,6 +24,11 @@ document.querySelector("._sale_form").addEventListener('submit', event => {
     // event.preventDefault()
 })
 
+dropdown_setter_client_options_by_service(document.querySelector('._client'), async (q) => {
+    let response = await fetch(`/api/client_options_by_service/?q=${q}`);
+    let data = await response.json();
+    return data['clients']
+});
 
 function dropdown_setter(el, download_list, button_click_callback = null) {
     const drop_item_sample = el.querySelector('.dropdown__list button').cloneNode(true);
@@ -38,6 +42,68 @@ function dropdown_setter(el, download_list, button_click_callback = null) {
         drop_list.innerHTML = '';
         if (drop_input.value !== '') {
             let l = await download_list(drop_input.value);
+            drop_list.innerHTML = '';
+            for (let line of l) {
+                // создание строки
+                let n = drop_item_sample.cloneNode(true);
+                for (let key in line) {  // заполнение данными
+                    if (Array.isArray(line[key])) {
+
+                        for (let ar_line of line[key]) {
+                            let el = Array.from(n.querySelectorAll('._' + key)).pop();
+                            el.innerText = ar_line;
+                            let new_el = el.cloneNode();
+                            new_el.innerText = ar_line;
+                            el.after(new_el)
+                        }
+                        Array.from(n.querySelectorAll('._' + key)).pop().remove()
+                    } else {
+                        n.querySelector('._' + key).innerText = line[key]
+                    }
+                }
+                drop_list.append(n);
+
+                // Установка клика
+                n.addEventListener('mousedown', (ev) => {
+                    if (ev.button !== 0) { // Only right click
+                        return
+                    }
+
+                    drop_input.value = n.querySelector('._main').innerText;
+
+                    if (button_click_callback !== null) {
+                        button_click_callback(drop_input);
+                    }
+                })
+
+            }
+        }
+
+    });
+    drop_input.addEventListener('focusin', function (event) {
+        drop_list.style.display = 'block'
+    });
+
+    drop_input.addEventListener('focusout', function (event) {
+        drop_list.style.display = 'none'
+    });
+
+}
+
+
+function dropdown_setter_client_options_by_service(el, download_list, button_click_callback = null) {
+    const drop_item_sample = el.querySelector('._client_options_by_service button').cloneNode(true);
+    el.querySelector('._client_options_by_service').innerHTML = '';
+
+    let drop_list = el.querySelector('._client_options_by_service');
+    let drop_input = el.querySelector('.dropdown input');
+
+
+    drop_input.addEventListener('input', async function (event) {
+        drop_list.innerHTML = '';
+        if (drop_input.value !== '') {
+            let l = await download_list(drop_input.value);
+            drop_list.innerHTML = '';
             for (let line of l) {
                 // создание строки
                 let n = drop_item_sample.cloneNode(true);

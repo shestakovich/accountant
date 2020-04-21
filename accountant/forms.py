@@ -34,6 +34,20 @@ class SaleForm(forms.ModelForm):
             self.initial[self.lead_time_field.format(i)] = format_timedelta(sold_service.lead_time) \
                 if sold_service.lead_time else ''
 
+    def clean_client(self):
+        client = self.cleaned_data.get('client')
+        if client and client.split(':')[0].strip().lower() == 'id':
+            try:
+                pk = int(client.split(':')[1])
+            except (ValueError, IndexError):
+                raise forms.ValidationError('id is not int')
+            try:
+                client = Client.objects.get(company=self.request.user.company, pk=pk)
+            except Client.DoesNotExist:
+                raise forms.ValidationError('client does not exists')
+        return client
+
+
     def clean(self):
         i = 0
         sold_services = []
@@ -41,7 +55,7 @@ class SaleForm(forms.ModelForm):
         while self.cleaned_data.get(self.service_field.format(i)):
 
             sold_services.append({
-                'service': self.cleaned_data.get(self.service_field.format(i)),
+                'service': self.cleaned_data.get(self.service_field.format(i)).lower(),
                 'amount': self.cleaned_data.get(self.amount_field.format(i)) or 1,
                 'price': self.cleaned_data.get(self.price_field.format(i)),
                 'lead_time': self.cleaned_data.get(self.lead_time_field.format(i)) or None,
@@ -63,12 +77,16 @@ class SaleForm(forms.ModelForm):
         sale = super().save(commit=False)
         sale.company = self.request.user.company
         sale.service_provider = self.request.user
-        client_name = self.cleaned_data.get('client')
-        if not sale.pk or sale.client.name != client_name:
-            if client_name:
-                sale.client = Client.objects.get_or_create(company=sale.company, name=client_name)[0]
-            else:
-                sale.client = Client.objects.create(company=sale.company)
+
+        client = self.cleaned_data.get('client')
+        if isinstance(client, Client):
+            sale.client = client
+        else:
+            if not sale.pk or sale.client.name != client:
+                if client:
+                    sale.client = Client.objects.get_or_create(company=sale.company, name=client)[0]
+                else:
+                    sale.client = Client.objects.create(company=sale.company)
 
         sale.save()
 
