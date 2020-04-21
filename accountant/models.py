@@ -75,8 +75,6 @@ class SoldService(models.Model):
 
 @receiver(post_save, sender=CustomUser)
 def add_company(sender, instance, created, **kwargs):
-    print('RECEIVER IN')
-    if created:
-        print('RECEIVER CREATE COMPANY')
+    if created and instance.company is None:
         instance.company = Company.objects.create(name=instance.username)
         instance.save()

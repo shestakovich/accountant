@@ -1,4 +1,4 @@
-from django.db.models import Avg, Min, Prefetch, Sum
+from django.db.models import Avg, Min, Prefetch, Sum, FloatField
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils.timezone import make_naive
@@ -52,17 +52,6 @@ def client_options(request):
         return JsonResponse({'error': 'not q'})
     q = q.lower().strip()
 
-    # purchases = Sale.objects.filter(client=OuterRef('pk'))\
-    #     .prefetch_related(Prefetch('rendered_services', queryset=RenderedService.objects.select_related('service')))\
-    #     .annotate(total=Sum('rendered_services__price'))\
-    #     .order_by('-date')
-
-    # clients = Client.objects.filter(name__icontains=q).annotate(last_sale=Subquery(Sale.objects.filter(client=OuterRef('pk')).order_by('-date').values('pk')[:1]))\
-    #     .annotate(date_last_purchase=Subquery(purchases.values('date')[:1]),
-    #               services_last_purchase=Subquery(RenderedService.objects.filter(sale=OuterRef('last_sale')).values('service__name')),
-    #
-    #               )
-
     purchases = Sale.objects \
         .filter(company=request.user.company) \
         .prefetch_related(Prefetch('services', queryset=SoldService.objects.select_related('service'))) \
@@ -70,8 +59,10 @@ def client_options(request):
         .order_by('-date')
 
     clients = Client.objects.filter(company=request.user.company,
-                                    name__icontains=q
-                                    ).prefetch_related(Prefetch('purchases', queryset=purchases))
+                                    name__icontains=q,
+                                    )\
+        .prefetch_related(Prefetch('purchases', queryset=purchases))\
+        .order_by('-purchases__date')
 
     res = [
         {
@@ -84,3 +75,27 @@ def client_options(request):
     ]
 
     return JsonResponse({'clients': res})
+
+
+@login_required
+def client_options_by_service(request):
+    q = request.GET.get('q')
+    if not q:
+        return JsonResponse({'error': 'not q'})
+    q = q.lower().strip()
+
+    clients = Client.objects.filter(company=request.user.company,
+                                    purchases__services__service__name__contains=q
+                                    ).distinct().order_by('-purchases__date')[:10]
+
+    response_data = []
+    for client in clients:
+        purchase = client.purchases.filter(services__service__name__contains=q).prefetch_related('services__service').order_by('-date')[0]
+        response_data.append({
+            'name': client.name,
+            'purchase_date': purchase.date,
+            'purchase_services': list(purchase.services.all().values_list('service__name', flat=True)),
+            'purchase_total': purchase.services.all().aggregate(total=Sum('price', output_field=FloatField()))['total'],
+        })
+
+    return JsonResponse({'clients': response_data})
