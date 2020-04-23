@@ -35,6 +35,7 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
     ports:
       - 80:80
+      - 443:443
     depends_on:
       - web
 
