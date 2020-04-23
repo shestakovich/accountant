@@ -32,6 +32,7 @@ services:
       dockerfile: ./nginx/Dockerfile
     volumes:
       - ./logs/nginx:/var/log/nginx
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
     ports:
       - 80:80
     depends_on:
