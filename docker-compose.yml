@@ -3,21 +3,39 @@ version: '3.7'
 services:
   web:
     build: .
-    command: python /code/manage.py runserver 0.0.0.0:8000
+    command: /usr/local/bin/uwsgi --chdir /code --module accountant_project.wsgi --master --socket=0.0.0.0:8000 --processes=5 --vacuum
+#    command: python /code/manage.py runserver 0.0.0.0:8000
     restart: always
+    env_file:
+      - web.env
+      - db.env
     volumes:
       - .:/code
     ports:
       - 8000:8000
+    expose:
+      - 8000
     depends_on:
       - db
+
   db:
     image: postgres
     restart: always
-    environment:
-      - POSTGRES_PASSWORD=postgres
+    env_file:
+      - db.env
     volumes:
       - postgres_data:/var/lib/postgresql/data/
+
+  nginx:
+    build:
+      context: ./
+      dockerfile: ./nginx/Dockerfile
+    volumes:
+      - ./logs/nginx:/var/log/nginx
+    ports:
+      - 80:80
+    depends_on:
+      - web
 
 volumes:
   postgres_data:
