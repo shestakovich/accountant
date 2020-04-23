@@ -3,3 +3,4 @@ FROM nginx
 RUN rm /etc/nginx/conf.d/default.conf
 COPY ./staticfiles/ /code/staticfiles/
 COPY ./nginx/nginx.conf /etc/nginx/conf.d
+RUN apt-get update && apt-get install certbot python-certbot-nginx -y
