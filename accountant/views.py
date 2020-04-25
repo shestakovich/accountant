@@ -141,12 +141,13 @@ class StatisticsPage(LoginRequiredMixin, TemplateView):
 
         agr_prices_lead_time = SoldService.objects.filter(sale__date__range=time_range,
                                                           sale__company=self.request.user.company) \
-            .exclude(lead_time=None) \
-            .aggregate(Sum('price', output_field=FloatField()), Sum('lead_time'))
+            .aggregate(sum_prices=Sum('price', output_field=FloatField()),
+                       sum_lead_time=Sum('lead_time', filter=Q(lead_time__isnull=False)),
+                       )
 
-        avg_earnings_in_hour = agr_prices_lead_time['price__sum'] / (
-                agr_prices_lead_time['lead_time__sum'].seconds / 3600) \
-            if agr_prices_lead_time['lead_time__sum'] \
+        avg_earnings_in_hour = agr_prices_lead_time['sum_prices'] / (
+                agr_prices_lead_time['sum_lead_time'].seconds / 3600) \
+            if agr_prices_lead_time['sum_lead_time'] \
             else 0
 
         sales = q_sales_limited_time.annotate(Sum('services__price')).order_by('-date')
@@ -160,6 +161,7 @@ class StatisticsPage(LoginRequiredMixin, TemplateView):
 
         context = {
             'avg_earnings_in_hour': round(avg_earnings_in_hour, 2),
+            'total_hours': agr_prices_lead_time['sum_lead_time'],
             'earnings': earnings,
             'clients': {
                 'amount': amount_clients,

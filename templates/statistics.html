@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load filters %}
 {% block content %}
     {% include 'nav_bar.html' with active='statistics' %}
     <div class="container">
@@ -31,9 +32,9 @@
                     <span>Из них {{ clients.new }} ({{ clients.percent }}%) новых</span></div>
             </div>
             <div class="report-row__line">
-                <div class="report-row__col-left">Средний зарабаток в час:</div>
-                <div class="report-row__col-right">{{ avg_earnings_in_hour }} руб
-                    <span></span></div>
+                <div class="report-row__col-left">Суммарное время работы:</div>
+                <div class="report-row__col-right">{{ total_hours|extract_duration }}
+                    <span>Средний зарабаток в час: {{ avg_earnings_in_hour|floatformat:"2" }} руб</span></div>
             </div>
         </div>
         <canvas id="statistics_chart" width="1000" height="300"></canvas>
