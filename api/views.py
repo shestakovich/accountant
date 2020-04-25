@@ -1,4 +1,5 @@
-from django.db.models import Avg, Min, Prefetch, Sum, FloatField
+from django.db.models import Avg, Min, Prefetch, Sum, FloatField, F
+from django.db.models.functions import Cast
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils.formats import date_format
@@ -36,8 +37,12 @@ def service_tip(request):
     else:
         response = {
             'title': service.name.capitalize(),
-            'avg_price': str(round(service.sold.aggregate(Avg('price'))['price__avg'], 2)),
-            'min_price': str(round(service.sold.aggregate(Min('price'))['price__min'], 2)),
+            'avg_price': str(round(service.sold
+                                   .annotate(price_for_one=Cast('price', FloatField())/Cast('amount', FloatField()))
+                                   .aggregate(avg_price=Avg('price_for_one'))['avg_price'], 2)),
+            'min_price': str(round(service.sold
+                                   .annotate(price_for_one=Cast('price', FloatField())/Cast('amount', FloatField()))
+                                   .aggregate(avg_price=Min('price_for_one'))['avg_price'], 2)),
             'chart_data': [],
         }
         for sold_service in service.sold.select_related('sale').order_by('sale__date'):
