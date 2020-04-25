@@ -22,4 +22,4 @@ COPY . /code/
 #
 #USER app
 
-ENTRYPOINT ["sh", "./docker-entrypoint.sh"]
+#ENTRYPOINT ["sh", "./docker-entrypoint.sh"]
