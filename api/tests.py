@@ -84,7 +84,7 @@ class ClientOptions(TestCase):
         response = self.client.get('/api/client_options_by_service/', {'q': 'tes'})
         self.assertEqual(response.status_code, 200)
         r_json = json.loads(response.content)
-        self.assertEqual(r_json['clients'][0]['name'], 'test_client2')
-        self.assertEqual(r_json['clients'][0]['purchase_total'], 100.0)
+        self.assertEqual(r_json['clients'][1]['name'], 'test_client2')
+        self.assertEqual(r_json['clients'][1]['purchase_total'], 100.0)
         self.assertEqual(len(r_json['clients']), 2)
 

@@ -90,18 +90,32 @@ def client_options_by_service(request):
         return JsonResponse({'error': 'not q'})
     q = q.lower().strip()
 
-    clients = Client.objects.filter(company=request.user.company,
-                                    purchases__services__service__name__contains=q
-                                    ).distinct().order_by('-purchases__date')[:10]
+    clients = Client.objects.raw('''
+        select distinct on (1) client.id,
+                           client.name,
+                           sale.date as sale_date,
+                           sale.id as sale_id,
+                           sum(sold_s.price) over (partition by sale.id) as sale_total
+        from accountant_client as client
+                 join accountant_sale as sale on client.id = sale.client_id
+                 join accountant_soldservice as sold_s on sale.id = sold_s.sale_id
+                 join accountant_service as service on sold_s.service_id = service.id
+        where service.name like %(q)s
+        and client.company_id=%(company)s
+        order by 1, sale_date desc
+    ''', {'q': f'%{q}%', 'company': request.user.company.id})
+
+
+    sales = Sale.objects.filter(id__in=[client.sale_id for client in clients]).prefetch_related('services__service').order_by('-date')
 
     response_data = []
-    for client in clients:
-        purchase = client.purchases.filter(services__service__name__contains=q).prefetch_related('services__service').order_by('-date')[0]
+
+    for client, sale in zip(clients, sales):
         response_data.append({
             'name': str(client),
-            'purchase_date': date_format(purchase.date, 'j E Y в H:i'),
-            'purchase_services': list(purchase.services.all().values_list('service__name', flat=True)),
-            'purchase_total': purchase.services.all().aggregate(total=Sum('price', output_field=FloatField()))['total'],
+            'purchase_date': date_format(client.sale_date, 'j E Y в H:i'),
+            'purchase_services': list(sale.services.all().values_list('service__name', flat=True)),
+            'purchase_total': float(client.sale_total),
         })
 
     return JsonResponse({'clients': response_data})
